@@ -1,0 +1,42 @@
+# Testing stage
+FROM maven:3.8.4-openjdk-8 AS tester
+
+WORKDIR /app
+
+# Copying only the POM file to cache dependencies
+COPY pom.xml .
+
+# Download and cache dependencies
+RUN mvn dependency:go-offline
+
+# Copying the rest of the application source
+COPY src ./src
+
+# Run tests and abort build if tests fail
+RUN mvn test || { echo "Tests failed. Aborting build."; exit 1; }
+
+# Build stage
+FROM maven:3.8.4-openjdk-8 AS builder
+
+WORKDIR /app
+
+# Copying dependencies from the testing stage
+COPY --from=tester /root/.m2 /root/.m2
+
+# Copying the rest of the application source
+COPY . .
+
+# Build the application
+RUN mvn clean package
+
+# Production stage
+FROM openjdk:8-jre-alpine AS production
+
+WORKDIR /app
+
+# Copy the built artifact from the builder stage
+COPY --from=builder /app/target/*.war ./app.war
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "app.war"]
