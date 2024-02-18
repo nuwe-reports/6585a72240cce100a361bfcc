@@ -48,17 +48,16 @@ public class AppointmentController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<Appointment> listAppointments = appointmentRepository.findAll();
+        boolean overlaps = appointmentRepository.findAll().stream()
+                .anyMatch(appointment::overlaps);
 
-        for (Appointment listAppointment : listAppointments) {
-            if (appointment.overlaps(listAppointment)) {
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-            }
+        if (overlaps) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        return new ResponseEntity<>(savedAppointment,HttpStatus.OK);
 
+        return new ResponseEntity<>(savedAppointment,HttpStatus.OK);
     }
 
     @DeleteMapping("/appointments/{id}")
