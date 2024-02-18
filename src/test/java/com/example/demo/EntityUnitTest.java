@@ -50,6 +50,37 @@ class EntityUnitTest {
     }
 
     @Test
+    void testAppointmentOverlapsTime1() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        LocalDateTime startsAt1 = LocalDateTime.parse("12:30 24/04/2023", formatter);
+        LocalDateTime finishesAt1 = LocalDateTime.parse("13:30 24/04/2023", formatter);
+        LocalDateTime startsAt2 = LocalDateTime.parse("11:30 24/04/2023", formatter);
+        LocalDateTime finishesAt2 = LocalDateTime.parse("12:35 24/04/2023", formatter);
+
+        Appointment app1 = new Appointment(p1, d1, r1, startsAt1, finishesAt1);
+        Appointment app2 = new Appointment(p1, d1, r1, startsAt2, finishesAt2);
+
+        assertThat(app1.overlaps(app2)).isTrue();
+    }
+
+    @Test
+    void testAppointmentOverlapsTime2() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        LocalDateTime startsAt1 = LocalDateTime.parse("11:20 24/04/2023", formatter);
+        LocalDateTime finishesAt1 = LocalDateTime.parse("12:30 24/04/2023", formatter);
+        LocalDateTime startsAt2 = LocalDateTime.parse("11:30 24/04/2023", formatter);
+        LocalDateTime finishesAt2 = LocalDateTime.parse("12:35 24/04/2023", formatter);
+
+        Appointment app1 = new Appointment(p1, d1, r1, startsAt1, finishesAt1);
+        Appointment app2 = new Appointment(p1, d1, r1, startsAt2, finishesAt2);
+
+        assertThat(app1.overlaps(app2)).isTrue();
+
+    }
+
+    @Test
     void testDoctorEntityPersistence() {
         entityManager.persistAndFlush(d1);
         Doctor found = entityManager.find(Doctor.class, d1.getId());
